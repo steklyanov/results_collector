@@ -1,0 +1,31 @@
+version: "2.3"
+
+services:
+  db:
+    image: postgres:latest
+    environment:
+      - POSTGRES_DB=app
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+    expose:
+      - "5432"
+    restart: "always"
+
+  backend:
+    build: ./backend/.
+    command: ./entrypoint.sh
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_NAME=app
+      - DB_USER=postgres
+      - DB_PASS=password
+      - DJANGO_DEBUG=False
+    volumes:
+      - ./backend:/backend
+    expose:
+      - "8000"
+    ports:
+      - "8040:8000"
+    restart: "always"

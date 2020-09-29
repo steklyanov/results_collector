@@ -31,6 +31,17 @@ else:
 
 ALLOWED_HOSTS = ["*"]
 
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://localhost:8000",
+    "http://nginx:80",
+    "http://localhost:40755",
+]
+
+INTERNAL_IPS = [
+    '127.0.0.1',
+]
+
 
 # Application definition
 
@@ -42,10 +53,19 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'rest_framework',
+    'debug_toolbar',
+    'corsheaders',
+
     'collector'
 ]
 
 MIDDLEWARE = [
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
+
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
+
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -141,8 +161,8 @@ USE_TZ = True
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 if DEBUG:
-    MEDIA_ROOT = os.path.join(BASE_DIR, "media/")
-    STATIC_ROOT = os.path.join(BASE_DIR, "static/")
+    MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+    STATIC_ROOT = os.path.join(BASE_DIR, "static")
 else:
     MEDIA_ROOT = '/media/'
     STATIC_ROOT = '/static/'

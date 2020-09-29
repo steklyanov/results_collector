@@ -2,6 +2,7 @@ from .models import Catch, Person
 from .serializers import CatchSerializer, PersonSerializer
 
 from django.core.files.base import ContentFile
+from django.db import connection
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -15,7 +16,6 @@ import time
 
 class CatchHandler(APIView):
     def post(self, request):
-        print("RECEIVE POST")
         if "ex_id" and "image" in request.data:
             person, _ = Person.objects.get_or_create(ex_id=request.data["ex_id"],
                                                      defaults={'name': names.get_full_name()})
@@ -27,9 +27,21 @@ class CatchHandler(APIView):
 
             return Response(status=status.HTTP_201_CREATED)
         else:
-            Response({"error": "no external id or image provided"}, status=status.HTTP_204_NO_CONTENT)
+            return Response({"error": "no external id or image provided"}, status=status.HTTP_204_NO_CONTENT)
 
 
 class ListCatchesView(generics.ListAPIView):
-    queryset = Catch.objects.all()
     serializer_class = CatchSerializer
+
+    def get_queryset(self, *args, **kwargs):
+        cursor = connection.cursor()
+        cursor.execute('''select person_id, array_agg(t2.*) as catch_groups from (select * from collector_catch
+                        left join "collector_person"
+                        on ("collector_catch"."person_id" = "collector_person"."id")
+                        order by collector_catch.datetime, collector_catch.person_id asc ) t2 group by t2.person_id''')
+        rows = cursor.fetchall()
+        print(rows)
+        print(self.request.query_params)
+        print(args)
+        print(kwargs)
+        return rows

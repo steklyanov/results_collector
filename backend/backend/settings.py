@@ -35,7 +35,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:8000",
     "http://nginx:80",
-    "http://localhost:40755",
+    "http://localhost:46133",
 ]
 
 INTERNAL_IPS = [

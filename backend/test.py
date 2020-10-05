@@ -38,7 +38,17 @@ def get_today_midnight():
     print(datetime.datetime.now().replace(microsecond=0))
 
 
+def linked_list():
+    for i in range(5):
+        l = [1, 2, 3]
+        l.extend(l)
+        print(l)
+    print(l)
+
+
 if __name__ == '__main__':
     # list_comp()
-    get_today_midnight()
+    # get_today_midnight()
+    linked_list()
+
 

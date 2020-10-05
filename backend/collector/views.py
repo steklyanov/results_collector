@@ -1,5 +1,5 @@
 from .models import Catch, Person
-from .serializers import NestedCatchesSerializer, CatchSerializer
+from .serializers import NestedCatchesSerializer, CatchSerializer, PersonSerializer
 
 from django.core.files.base import ContentFile
 from django.db import connection
@@ -39,7 +39,6 @@ class ListCatchesView(generics.ListAPIView):
         from_datetime = self.request.query_params.get("from", datetime.datetime.combine(datetime.date.today(),
                                                                                         datetime.datetime.min.time()))
         till_datetime = self.request.query_params.get("till", datetime.datetime.now().replace(microsecond=0))
-        print(from_datetime)
         cursor.execute('''select person_id, array_agg(t2.*) as catch_groups from (select * from collector_catch
                         left join "collector_person"
                         on ("collector_catch"."person_id" = "collector_person"."id")
@@ -48,3 +47,27 @@ class ListCatchesView(generics.ListAPIView):
                        (from_datetime, till_datetime))
         rows = cursor.fetchall()
         return rows
+
+
+class PersonListView(generics.ListAPIView):
+    serializer_class = PersonSerializer
+    queryset = Person.objects.all()
+
+
+class SinglePersonView(APIView):
+
+    def get(self, *args, **kwargs):
+        print(self.request)
+        print(self.request.query_params)
+        print(args)
+        print(kwargs)
+        rows = Catch.objects.get(person_id=kwargs.get("id"))
+        print(rows)
+        return rows
+
+    # def get(self, request, *args, **kwargs):
+    #     print(request)
+    #     print(args)
+    #     print(kwargs)
+    #     Catch.objects.get(person_id=kwargs.get("id"))
+    #     return Response(status=status.HTTP_200_OK)

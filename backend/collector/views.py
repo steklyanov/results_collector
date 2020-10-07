@@ -39,6 +39,7 @@ class ListCatchesView(generics.ListAPIView):
         from_datetime = self.request.query_params.get("from", datetime.datetime.combine(datetime.date.today(),
                                                                                         datetime.datetime.min.time()))
         till_datetime = self.request.query_params.get("till", datetime.datetime.now().replace(microsecond=0))
+        print(from_datetime, till_datetime)
         cursor.execute('''select person_id, array_agg(t2.*) as catch_groups from (select * from collector_catch
                         left join "collector_person"
                         on ("collector_catch"."person_id" = "collector_person"."id")
@@ -54,14 +55,18 @@ class PersonListView(generics.ListAPIView):
     queryset = Person.objects.all()
 
 
-class SinglePersonView(APIView):
+class SinglePersonView(generics.ListAPIView):
+    lookup_url_kwarg = "id"
+    serializer_class = CatchSerializer
 
-    def get(self, *args, **kwargs):
+    def get_queryset(self, *args, **kwargs):
         print(self.request)
         print(self.request.query_params)
         print(args)
         print(kwargs)
-        rows = Catch.objects.get(person_id=kwargs.get("id"))
+        uid = self.kwargs.get(self.lookup_url_kwarg)
+        print("UUID", uid)
+        rows = Catch.objects.filter(person_id=uid)
         print(rows)
         return rows
 
@@ -71,3 +76,11 @@ class SinglePersonView(APIView):
     #     print(kwargs)
     #     Catch.objects.get(person_id=kwargs.get("id"))
     #     return Response(status=status.HTTP_200_OK)
+
+
+class GetLastImage(APIView):
+    def post(self, request):
+        if 'id' in request.data:
+            prev_issue = Catch.objects.filter(camera_id=request.data['id']).order_by("-time")[1]
+            serializer = CatchSerializer(prev_issue)
+            return Response(serializer.data)

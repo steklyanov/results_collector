@@ -21,7 +21,8 @@ from django.conf import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/v1/collector/', include('collector.urls'))
+    path('api/v1/collector/', include('collector.urls')),
+    path('api/v1/polygon/', include('polygon.urls'))
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + \
     static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 

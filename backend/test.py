@@ -48,7 +48,7 @@ def linked_list():
 
 if __name__ == '__main__':
     # list_comp()
-    # get_today_midnight()
-    linked_list()
+    get_today_midnight()
+    # linked_list()
 
 

@@ -35,7 +35,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:8000",
     "http://nginx:80",
-    "http://localhost:46133",
+    "http://localhost:38637",
 ]
 
 INTERNAL_IPS = [
@@ -57,7 +57,8 @@ INSTALLED_APPS = [
     'debug_toolbar',
     'corsheaders',
 
-    'collector'
+    'collector',
+    'polygon'
 ]
 
 MIDDLEWARE = [

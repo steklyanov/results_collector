@@ -30,7 +30,7 @@
                 {{ item.external_id }}
               </td>
               <td>
-                <img :src=" 'http://localhost:8000/media/' + item.img_path" aspect-ratio="1" width="100"></img>
+                <img :src="item.img_path" aspect-ratio="1" width="100"></img>
               </td>
             </tr>
           </template>

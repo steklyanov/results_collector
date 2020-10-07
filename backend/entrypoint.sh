@@ -2,4 +2,4 @@
 python3 manage.py collectstatic --noinput
 python3 manage.py makemigrations
 python3 manage.py migrate
-python3 manage.py runserver 0.0.0.0:8000
+gunicorn backend.wsgi -w 8 --max-requests 100 --max-requests-jitter 50 -b 0.0.0.0:8000

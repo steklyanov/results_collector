@@ -31,7 +31,7 @@ export default {
   actions: {
     getCatches(ctx, payload) {
       console.log(payload)
-      this.$axios.get('api/v1/collector/catches_list/' + `?from=${payload.from}&till=${payload.till}/`)
+      this.$axios.get('api/v1/collector/catches_list/' + payload)
         .then(response => {
           console.log("RESPONSE", response)
           ctx.commit('updateCatches', response.data)

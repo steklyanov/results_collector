@@ -3,102 +3,14 @@
 
     <v-row>
       <v-col>
-        <v-menu
-        ref="date_from_emiter"
-        v-model="date_from_emiter"
-        :close-on-content-click="false"
-        :return-value.sync="date_from"
-        transition="scale-transition"
-        offset-y
-        min-width="290px"
-      >
-        <template v-slot:activator="{ on, attrs }">
-          <v-text-field
-            v-model="date_from"
-            label="События до"
-            prepend-icon="mdi-calendar"
-            readonly
-            v-bind="attrs"
-            v-on="on"
-          ></v-text-field>
-        </template>
-        <v-date-picker
-          v-model="date_from"
-          no-title
-          scrollable
-        >
-          <v-spacer></v-spacer>
-          <v-btn
-            text
-            color="primary"
-            @click="date_from_emiter = false"
-          >
-            Cancel
-          </v-btn>
-          <v-btn
-            text
-            color="primary"
-            @click="$refs.date_from_emiter.save(date_from)"
-          >
-            OK
-          </v-btn>
-        </v-date-picker>
-      </v-menu>
+        <catches-filter @filter-apply="onFilterAccept" />
       </v-col>
       <v-col>
-        <v-menu
-          ref="date_till_emiter"
-          v-model="date_till_emiter"
-          :close-on-content-click="false"
-          :return-value.sync="date_till"
-          transition="scale-transition"
-          offset-y
-          min-width="290px"
-        >
-          <template v-slot:activator="{ on, attrs }">
-            <v-text-field
-              v-model="date_till"
-              label="События до"
-              prepend-icon="mdi-calendar"
-              readonly
-              v-bind="attrs"
-              v-on="on"
-            ></v-text-field>
-          </template>
-          <v-date-picker
-            v-model="date_till"
-            no-title
-            scrollable
-          >
-            <v-spacer></v-spacer>
-            <v-btn
-              text
-              color="primary"
-              @click="date_till_emiter = false"
-            >
-              Cancel
-            </v-btn>
-            <v-btn
-              text
-              color="primary"
-              @click="$refs.date_till_emiter.save(date_till)"
-            >
-              OK
-            </v-btn>
-          </v-date-picker>
-        </v-menu>
-      </v-col>
-      <v-col>
-        <v-btn @click="queryCatches">
-
+        <v-btn @click="downloadReport">
+          Выгрузить отчет
         </v-btn>
       </v-col>
     </v-row>
-
-
-
-
-
     <table-row-dialog @closeModal="changeModalStatus" :dialog="dialog" :row="row" />
     <v-data-table
       v-if="catches"
@@ -133,12 +45,13 @@
 
 import { mapState } from 'vuex';
 import TableRowDialog from "@/components/catches/TableRowDialog";
+import CatchesFilter from "@/components/catches/CatchesFilter";
 
 export default {
 name: "CatchesTable",
-  components: {TableRowDialog},
+  components: {TableRowDialog, CatchesFilter},
   mounted() {
-  this.$store.dispatch('getCatches', {"from": this.date_from, "till": this.date_till})
+  this.$store.dispatch('getCatches', '')
   },
   computed: {
     ...mapState([
@@ -148,10 +61,10 @@ name: "CatchesTable",
   data () {
     return {
       date_from_emiter: false,
-      date_from: new Date().toISOString().substr(0, 10),
+      date_from: null,
 
       date_till_emiter: false,
-      date_till: new Date().toISOString().substr(0, 10),
+      date_till: null,
 
       dialog: false,
       row: null,
@@ -184,8 +97,18 @@ name: "CatchesTable",
     }
   },
   methods: {
+    downloadReport() {
+      this.$store.dispatch('getCatches', `?from=${this.date_from}&till=${this.date_till}&report=True`)
+
+    },
+    onFilterAccept(filter) {
+      this.date_till = filter.dateTo;
+      this.date_from = filter.dateFrom;
+      this.queryCatches();
+    },
+
     queryCatches() {
-      this.$store.dispatch('getCatches', {"from": this.date_from, "till": this.date_till})
+      this.$store.dispatch('getCatches', `?from=${this.date_from}&till=${this.date_till}`)
       console.log(this.date_from, this.date_till)
 
     },

@@ -2,8 +2,8 @@ from rest_framework.views import APIView
 from rest_framework.generics import ListCreateAPIView
 from rest_framework.response import Response
 
-from .models import Polygon
-from .serializers import PolygonSerializer, SavePolygonSerializer
+from .models import Polygon, Camera
+from .serializers import PolygonSerializer, SavePolygonSerializer, CameraSerializer
 
 from shapely.geometry import Point
 from shapely.geometry.polygon import Polygon as ShPolygon
@@ -61,5 +61,15 @@ class UpdatePolygonView(APIView):
         serializer = SavePolygonSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-        print(serializer.errors)
         return Response(status=201)
+
+
+class GetCameraView(APIView):
+    def get(self, *args, **kwargs):
+        print(self.request.query_params)
+        print(kwargs)
+        cam = Camera.objects.get(id=kwargs["cam_id"])
+        serializer = CameraSerializer(cam)
+        return Response(serializer.data)
+
+        pass

@@ -96,131 +96,15 @@ class SinglePersonView(generics.ListAPIView):
         uid = self.kwargs.get(self.lookup_url_kwarg)
         print("UUID", uid)
         rows = Catch.objects.filter(person_id=uid)
-        print(rows)
         return rows
-
-    # def get(self, request, *args, **kwargs):
-    #     print(request)
-    #     print(args)
-    #     print(kwargs)
-    #     Catch.objects.get(person_id=kwargs.get("id"))
-    #     return Response(status=status.HTTP_200_OK)
 
 
 class GetLastImage(APIView):
-    def post(self, request):
-        if 'id' in request.data:
-            prev_issue = Catch.objects.filter(camera_id=request.data['id']).order_by("-time")[1]
+    def get(self, request):
+        # I DONT NEED CAM_ID SO DEFAULT VALUE TRUE AND NOT FILTERED
+        cam_id = self.request.query_params.get("from", True)
+        if cam_id:
+            prev_issue = Catch.objects.last()
             serializer = CatchSerializer(prev_issue)
             return Response(serializer.data)
-
-
-class CreateSheetView(generics.ListAPIView):
-    def get(self, request):
-        try:
-            os.stat("documents")
-        except Exception as e:
-            os.mkdir("documents")
-
-        from_dt, to_dt = self.request.query_params.get("from"), self.request.query_params.get("to")
-        if from_dt is None or to_dt is None:
-            return Response(status=400, data={"error": "Please provide to and from"})
-
-        date_start = datetime.fromtimestamp(int(from_dt))
-        date_finish = datetime.fromtimestamp(int(to_dt))
-
-        dates = []
-
-        delta = date_finish.date() - date_start.date()
-        for i in range(delta.days + 1):
-            day = date_start.date() + datetime.timedelta(days=i)
-            dates.append(day)
-
-        wb = Workbook()
-        ws = wb.active
-        ws.title = 'Пассажиропоток'
-        ws['A1'] = "(YYYY-MM-DD-HH-MM-SS)"
-        ws['B1'] = "ID камеры"
-        ws['C1'] = "Количество пассажиров"
-        ws['D1'] = "Уникальные"
-        ws['E1'] = "Распознаные"
-        total = 0
-
-        catches = Catch.objects.filter(time__date__gte=date_start, time__date__lte=date_finish, camera=camera) \
-            .select_related("camera", "person").order_by('time')
-        recognized = list(filter(lambda x: x.person is not None, catches))
-
-        for index, d in enumerate(dates):
-            date_catches = list(filter(lambda x: x.time.date() == d, catches))
-            date_recognized = list(filter(lambda x: x.person is not None, date_catches))
-            unique = set(date_recognized)
-
-            total += len(date_catches)
-            ws['A' + str(index + 2)] = str(d)
-            ws['B' + str(index + 2)] = "2"
-            ws['C' + str(index + 2)] = len(date_catches)
-            ws['D' + str(index + 2)] = len(date_catches) - (len(date_recognized) - len(unique))
-            ws['E' + str(index + 2)] = len(date_recognized)
-        ws['A' + str(len(dates) + 3)] = "Общаяя сумма"
-        ws['C' + str(len(dates) + 3)] = total
-
-        ws3 = wb.create_sheet("New_sheet")
-        ws3.title = 'Уникальные'
-        ws3['A1'] = "(YYYY-MM-DD-HH-MM-SS)"
-        ws3['B1'] = "ID камеры"
-        ws3['C1'] = "ID пассажира"
-        ws3.column_dimensions['A'].width = 20
-        ws3.column_dimensions['B'].width = 20
-        ws3.column_dimensions['C'].width = 20
-        unique = set([i for i in recognized])
-        print(len(unique))
-        print(len(recognized))
-        for index, catch in enumerate(unique):
-            ws3['A' + str(index + 2)] = catch.time
-            ws3['B' + str(index + 2)] = catch.camera.id
-            ws3['C' + str(index + 2)] = catch.person.id
-
-        ws2 = wb.create_sheet("New_sheet")
-        ws2.title = 'Распознавание'
-        ws2['A1'] = "(YYYY-MM-DD-HH-MM-SS)"
-        ws2['B1'] = "ID камеры"
-        ws2['C1'] = "ID пассажира"
-        ws2['D1'] = "Фото в момент прохода"
-        ws2['E1'] = "Детектирование"
-        ws2['F1'] = "% сходства с эталоном"
-        ws2.column_dimensions['A'].width = 20
-        ws2.column_dimensions['B'].width = 20
-        ws2.column_dimensions['C'].width = 20
-        ws2.column_dimensions['D'].width = 20
-        ws2.column_dimensions['E'].width = 20
-        ws2.column_dimensions['F'].width = 20
-        for index, catch in enumerate(recognized):
-            time = str(catch.time.time()).split(":")
-            photo_name = str(catch.time.date()) + "_" + str(time[0]) + str(time[1]) + \
-                         str(time[2][:2]) + "0000" + str(catch.person.id) + ".jpg"
-            ws2['A' + str(index + 2)] = catch.time
-            ws2['B' + str(index + 2)] = catch.camera.id
-            ws2['C' + str(index + 2)] = "0000" + str(catch.person.id)
-            ws2['D' + str(index + 2)] = photo_name
-            ws2['E' + str(index + 2)] = "Да"
-            ws2['F' + str(index + 2)] = str(0)
-            # ws2['F' + str(index + 2)] = str(int(catch.score * 150))
-            print(catch.image.path)
-            try:
-                print(photo_name)
-                copy(catch.image.path, "documents/" + photo_name)
-            except Exception as e:
-                print(e, catch.id)
-            print("Im done", index)
-        wb.save('documents/sheet.xlsx')
-        make_archive("document", 'zip', "documents")
-
-        if os.path.exists("documents") and os.path.isdir("documents"):
-            rmtree("documents")
-        try:
-            os.stat("documents")
-        except:
-            os.mkdir("documents")
-
-        response = HttpResponse(open("document.zip", 'rb'), content_type='application/zip')
-        return response
+        return Response({"error": "Image not found"}, status=400)

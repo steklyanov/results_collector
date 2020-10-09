@@ -34,3 +34,11 @@ class PolygonSerializer(serializers.ModelSerializer):
     class Meta:
         model = Polygon
         fields = ['point', 'id', 'type']
+
+
+class CameraSerializer(serializers.ModelSerializer):
+    polygon = PolygonSerializer(read_only=True, many=True)
+
+    class Meta:
+        model = Camera
+        fields = '__all__'
